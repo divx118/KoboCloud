@@ -17,9 +17,15 @@ if [ ! -e $UserConfig ]; then
   fi
 fi
 
+# Below gives me double entries in the library so disabled it.
+
 #bind mount to subfolder of SD card on reboot
-mountpoint -q "$SD"
-if [ $? -ne 0 ]; then
-  mount --bind "$Lib" "$SD"
-  echo sd add /dev/mmcblk1p1 >> /tmp/nickel-hardware-status
-fi
+#mountpoint -q "$SD"
+#if [ $? -ne 0 ]; then
+#  mount --bind "$Lib" "$SD"
+#  echo sd add /dev/mmcblk1p1 >> /tmp/nickel-hardware-status
+#fi
+
+# Start an update of the library just in case. Notice that you will need
+# nickeldbus installed on your e-book reader https://github.com/shermp/NickelDBus
+qndb -t 30000 -s pfmDoneProcessing -m pfmRescanBooksFull

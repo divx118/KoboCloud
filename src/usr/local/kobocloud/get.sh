@@ -6,6 +6,9 @@ TEST=$1
 #load config
 . $(dirname $0)/config.sh
 
+# Show a little dialog when starting the sync.
+qndb -m mwcToast 4000 "Syncing start"
+
 #check if Kobocloud contains the line "UNINSTALL"
 if grep -q '^UNINSTALL$' $UserConfig; then
     echo "Uninstalling KoboCloud!"
@@ -82,16 +85,26 @@ if grep -q "^REMOVE_DELETED$" $UserConfig; then
 	recursiveUpdateFiles
 fi
 
-if [ "$TEST" = "" ]
-then
-    #bind mount to subfolder of SD card (library refresh trick)
-    mountpoint -q "$SD"
-    if [ $? -ne 0 ]; then
-    echo "`$Dt` bind mounting to SD"
-    mount --bind "$Lib" "$SD"
-    fi
-    echo sd add /dev/mmcblk1p1 >> /tmp/nickel-hardware-status
-fi
+# Below gives me double entries in the library so disabled it.
+
+#if [ "$TEST" = "" ]
+#then
+#    #bind mount to subfolder of SD card (library refresh trick)
+#    mountpoint -q "$SD"
+#    if [ $? -ne 0 ]; then
+#    echo "`$Dt` bind mounting to SD"
+#    mount --bind "$Lib" "$SD"
+#    fi
+#    echo sd add /dev/mmcblk1p1 >> /tmp/nickel-hardware-status
+#fi
+
+# Start an update of the library just in case. Notice that you will need
+# nickeldbus installed on your e-book reader https://github.com/shermp/NickelDBus
+qndb -t 30000 -s pfmDoneProcessing -m pfmRescanBooksFull
+
+# Show a little dialog when finished
+
+qndb -m mwcToast 4000 "Syncing done"
 
 rm "$Logs/index" >/dev/null 2>&1
 echo "`$Dt` done"

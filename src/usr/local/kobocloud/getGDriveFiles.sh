@@ -45,12 +45,24 @@ do
     echo "File code: $fileCode"
     echo "File name: $fileName"
     linkLine="https://drive.google.com/uc?id=$fileCode&export=download"
-    outFileName=`/bin/echo -e "$fileName" | tr ' ' '_' `
-    localFile="$outDir/$outFileName"
-
-    $KC_HOME/getRemoteFile.sh "$linkLine" "$localFile"
-    if [ $? -ne 0 ] ; then
-        echo "Having problems contacting Google Drive. Try again in a couple of minutes."
-        exit
+    outFileName=`/bin/echo -e "$fileName"`
+    if  echo "$outFileName" | grep -q '.png$'; then
+        bname=`echo "$outFileName" | sed "s/.*\///"`
+        localFile="$outDir/Thumbnails/$bname"
+    else
+        localFile="$outDir/$outFileName"
+    fi
+    # If a file is already synced once don't sync it again so you can delete e-books from your e-reader
+    # and they won't show up again. Note you will need to have REMOVE_DELETED on in kobocloudrc for this to work.
+    
+    if grep -Fq "$localFile" "$Lib/filesList.log"; then
+        echo "Do nothing already synced"
+    else
+        $KC_HOME/getRemoteFile.sh "$linkLine" "$localFile"
+        if [ $? -ne 0 ] ; then
+            echo "Having problems contacting Google Drive. Try again in a couple of minutes."
+            qndb -m mwcToast 3000 "No connection with google drive"
+            exit
+        fi
     fi
 done
